@@ -8,18 +8,23 @@ function SubjectPage() {
   const [pdfLink, setPdfLink] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch(`${BASE_URL}/api/book?classId=${classId}&subject=${subject}`)
-      .then(res => res.json())
-      .then(data => {
+ useEffect(() => {
+  fetch(`${BASE_URL}/api/book?classId=${classId}&subject=${subject.toLowerCase()}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data?.error) {
+        console.log(data.error);
+        setPdfLink("");
+      } else {
         setPdfLink(data?.pdfUrl);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.log(err);
-        setLoading(false);
-      });
-  }, [classId, subject]);
+      }
+      setLoading(false);
+    })
+    .catch(err => {
+      console.log(err);
+      setLoading(false);
+    });
+}, [classId, subject]);
 
   // 🔥 loading
   if (loading) {
