@@ -1,6 +1,6 @@
 /* full screen */
 .container {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -149,4 +149,15 @@
 }
 p{
   color: black;
+}
+.bg-animation {
+  pointer-events: none;
+}
+.bg-animation::before,
+.bg-animation::after {
+  pointer-events: none;
+}
+.card {
+  position: relative;
+  z-index: 10;
 }

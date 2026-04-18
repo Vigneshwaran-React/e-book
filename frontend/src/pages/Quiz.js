@@ -65,7 +65,13 @@ function Quiz() {
 
           <button
             className="quiz-btn"
-            onClick={() => window.location.reload()}
+            onClick={() => {
+  setCurrent(0);
+  setScore(0);
+  setSelected(null);
+  setFinished(false);
+  setShowAnswer(false);
+}}
           >
             Restart
           </button>
