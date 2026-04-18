@@ -10,7 +10,12 @@ dotenv.config();
 connectDB();
 
 // 🔥 MIDDLEWARE
-app.use(cors());
+
+app.use(cors({
+  origin: "https://study-ebook.netlify.app",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json());
 
 // 🔥 STATIC FILES (important → before routes is better)
