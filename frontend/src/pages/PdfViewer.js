@@ -8,6 +8,16 @@ function PdfViewer() {
 
   const pdfUrl = location.state?.url;
 
+  // 🚨 safety check
+  if (!pdfUrl) {
+    return (
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <h2>PDF not found ❌</h2>
+        <button onClick={() => navigate(-1)}>Go Back</button>
+      </div>
+    );
+  }
+
   return (
     <div className="pdf-container">
 
@@ -22,8 +32,8 @@ function PdfViewer() {
         title="PDF Viewer"
         className="pdf-frame"
         width="100%"
-      height="100%"
-      style={{ border: "none" }}
+        height="100%"
+        style={{ border: "none" }}
       />
     </div>
   );

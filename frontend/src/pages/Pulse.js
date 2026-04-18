@@ -1,25 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import "../styles/Pulse.css";
-import { FaUserCircle } from "react-icons/fa";
-import { MdAdminPanelSettings } from "react-icons/md"
+import { FaUserCircle, FaHome, FaBolt, FaQuestionCircle, FaFileAlt, FaPlay, FaPause, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
+import { MdAdminPanelSettings } from "react-icons/md";
 import { Link } from "react-router-dom";
-import { FaHome, FaBolt, FaQuestionCircle, FaFileAlt } from "react-icons/fa";
-import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
 import BASE_URL from "../config/config";
-
 
 function PulsePage() {
   const [videos, setVideos] = useState([]);
   const videoRefs = useRef([]);
-  const [, setRefresh] = useState(false);
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/upload/videos`)
       .then(res => res.json())
-      .then(data => setVideos(data));
+      .then(data => setVideos(data))
+      .catch(err => console.log(err));
   }, []);
 
-  // 🔥 Auto play based on scroll
+  // 🔥 Auto play
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -27,13 +24,13 @@ function PulsePage() {
           const video = entry.target;
 
           if (entry.isIntersecting) {
-            video.play();
+            video.play().catch(() => {}); // 🔥 avoid autoplay error
           } else {
             video.pause();
           }
         });
       },
-      { threshold: 0.7 } // 70% visible
+      { threshold: 0.7 }
     );
 
     videoRefs.current.forEach((video) => {
@@ -43,24 +40,26 @@ function PulsePage() {
     return () => observer.disconnect();
   }, [videos]);
 
-  // 🎮 play/pause toggle
- const togglePlay = (video) => {
-  if (video.paused) {
-    video.play();
-  } else {
-    video.pause();
-  }
-  setRefresh(prev => !prev); // 🔥 force update
-};
+  // 🎮 play/pause
+  const togglePlay = (video) => {
+    if (!video) return;
 
-const toggleMute = (video) => {
-  video.muted = !video.muted;
-  setRefresh(prev => !prev); // 🔥 force update
-};
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  };
+
+  // 🔊 mute toggle
+  const toggleMute = (video) => {
+    if (!video) return;
+    video.muted = !video.muted;
+  };
 
   return (
     <>
-    <nav className="navbar">
+      <nav className="navbar">
         <div className="logo">e-Book</div>
 
         <ul className="nav-links">
@@ -68,49 +67,45 @@ const toggleMute = (video) => {
           <li><Link to="/pulse">Pulse</Link></li>
           <li><Link to="/pyqs">PYQs</Link></li>
           <li><Link to="/quiz">Quiz</Link></li>
-          <li><Link to='/profile'><FaUserCircle size={24} /></Link></li>
-          <li className="profile-icon">
+          <li><Link to="/profile"><FaUserCircle size={24} /></Link></li>
+          <li>
             <Link to="/admin/upload"><MdAdminPanelSettings size={24} /></Link>
           </li>
         </ul>
       </nav>
-    <div className="reels-container">
-      {videos.map((v, i) => (
-        <div className="reel" key={v._id}>
-          
-          <video
-  ref={(el) => (videoRefs.current[i] = el)}
-  src={`${BASE_URL}${v.fileUrl}`}
-  loop
-  playsInline
-  className="video"
-  onClick={(e) => togglePlay(e.target)}
-/>
 
-          {/* 🔥 Controls */}
-          <div className="controls">
+      <div className="reels-container">
+        {videos.map((v, i) => (
+          <div className="reel" key={v._id}>
+            <video
+              ref={(el) => (videoRefs.current[i] = el)}
+              src={v.fileUrl} // ✅ FIXED
+              loop
+              muted // 🔥 autoplay work panna
+              playsInline
+              className="video"
+              onClick={(e) => togglePlay(e.target)}
+            />
 
-  {/* PLAY / PAUSE */}
-  <button onClick={() => togglePlay(videoRefs.current[i])}>
-    {videoRefs.current[i]?.paused ? <FaPlay /> : <FaPause />}
-  </button>
+            <div className="controls">
+              <button onClick={() => togglePlay(videoRefs.current[i])}>
+                {videoRefs.current[i]?.paused ? <FaPlay /> : <FaPause />}
+              </button>
 
-  {/* MUTE / UNMUTE */}
-  <button onClick={() => toggleMute(videoRefs.current[i])}>
-    {videoRefs.current[i]?.muted ? <FaVolumeMute /> : <FaVolumeUp />}
-  </button>
+              <button onClick={() => toggleMute(videoRefs.current[i])}>
+                {videoRefs.current[i]?.muted ? <FaVolumeMute /> : <FaVolumeUp />}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
 
-</div>
-
-        </div>
-      ))}
-    </div>
-    <div className="bottom-nav">
-        <div><Link to="/home"><FaHome size={24}/></Link></div>
-        <div><Link to="/pulse"><FaBolt size={24} /></Link></div>
-        <div><Link to="/pyqs"><FaFileAlt size={24} /> </Link></div>
-        <div><Link to="/quiz"><FaQuestionCircle size={24} /></Link></div>
-        <div><Link to='/profile'><FaUserCircle size={24} /></Link></div>
+      <div className="bottom-nav">
+        <Link to="/home"><FaHome size={24} /></Link>
+        <Link to="/pulse"><FaBolt size={24} /></Link>
+        <Link to="/pyqs"><FaFileAlt size={24} /></Link>
+        <Link to="/quiz"><FaQuestionCircle size={24} /></Link>
+        <Link to="/profile"><FaUserCircle size={24} /></Link>
       </div>
     </>
   );

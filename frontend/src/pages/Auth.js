@@ -11,87 +11,138 @@ function Auth() {
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [step, setStep] = useState(1); // 1-email, 2-otp, 3-password
+  const [step, setStep] = useState(1);
 
   const navigate = useNavigate();
 
   // 🔥 SEND OTP
   const sendOTP = async () => {
-    
-    const res = await fetch(`${BASE_URL}/api/auth/send-otp`, {
-      
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, username }),
-      
+    if (!email || !username) {
+      return alert("Enter email & username ⚠️");
     }
-  );
 
-    const data = await res.json();
+    try {
+      setLoading(true);
 
-    if (data.success) {
-      setStep(2);
-    } else alert(data.message);
-    console.log("EMAIL:", process.env.EMAIL_USER);
-console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
+      const res = await fetch(`${BASE_URL}/api/auth/send-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, username }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setStep(2);
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.log(err);
+      alert("Server error ❌");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 🔥 VERIFY OTP
   const verifyOTP = async () => {
-    const res = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, otp }),
-    });
+    if (!otp) return alert("Enter OTP ⚠️");
 
-    const data = await res.json();
+    try {
+      setLoading(true);
 
-    if (data.success) {
-      setStep(3);
-    } else alert(data.message);
+      const res = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, otp }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setStep(3);
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.log(err);
+      alert("Error ❌");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 🔥 SET PASSWORD
   const setPass = async () => {
-    const res = await fetch(`${BASE_URL}/api/auth/set-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    if (!password) return alert("Enter password ⚠️");
 
-    const data = await res.json();
+    try {
+      setLoading(true);
 
-    if (data.success) {
-      alert("Signup Success...");
-      setIsSignup(false);
-      setStep(1);
-    } else alert(data.message);
+      const res = await fetch(`${BASE_URL}/api/auth/set-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Signup Success 🎉");
+        setIsSignup(false);
+        setStep(1);
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.log(err);
+      alert("Error ❌");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 🔥 LOGIN
   const login = async () => {
-    const res = await fetch(`${BASE_URL}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    if (!email || !password) {
+      return alert("Enter email & password ⚠️");
+    }
 
-    const data = await res.json();
+    try {
+      setLoading(true);
 
-    if (data.success) {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("email", email);
-      navigate("/home");
-    } else alert(data.message);
+      const res = await fetch(`${BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("email", email);
+        navigate("/home");
+      } else {
+        alert(data.message);
+      }
+    } catch (err) {
+      console.log(err);
+      alert("Login failed ❌");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,17 +152,21 @@ console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
       <div className="card">
         <h2>{isSignup ? "Create Account" : "Welcome Back"}</h2>
 
+        {loading && <p>Processing... ⏳</p>}
 
         {/* USERNAME */}
         {isSignup && step === 1 && (
           <input
             placeholder="Username"
+            value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
         )}
+
         {/* EMAIL */}
         <input
           placeholder="Email"
+          value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
 
@@ -125,6 +180,7 @@ console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
           <>
             <input
               placeholder="Enter OTP"
+              value={otp}
               onChange={(e) => setOtp(e.target.value)}
             />
             <button onClick={verifyOTP}>Verify OTP</button>
@@ -135,16 +191,18 @@ console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
         {isSignup && step === 3 && (
           <>
             <div className="password-box">
-  <input
-    type={showPassword ? "text" : "password"}
-    placeholder="Set Password"
-    onChange={(e) => setPassword(e.target.value)}
-  />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Set Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
 
-  <span onClick={() => setShowPassword(!showPassword)}>
-    {showPassword ? "🙈" : "👁️"}
-  </span>
-</div>
+              <span onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? "🙈" : "👁️"}
+              </span>
+            </div>
+
             <button onClick={setPass}>Complete Signup</button>
           </>
         )}
@@ -153,16 +211,18 @@ console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
         {!isSignup && (
           <>
             <div className="password-box">
-  <input
-    type={showPassword ? "text" : "password"}
-    placeholder="Password"
-    onChange={(e) => setPassword(e.target.value)}
-  />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
 
-  <span onClick={() => setShowPassword(!showPassword)}>
-    {showPassword ? "👁️" : "🙈"}
-  </span>
-</div>
+              <span onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? "👁️" : "🙈"}
+              </span>
+            </div>
+
             <button onClick={login}>Login</button>
           </>
         )}

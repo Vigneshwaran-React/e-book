@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import "../styles/Quiz.css";
 import { Link } from "react-router-dom";
-import { FaHome, FaBolt, FaQuestionCircle, FaFileAlt } from "react-icons/fa";
-import { FaUserCircle } from "react-icons/fa";
-import { MdAdminPanelSettings } from "react-icons/md"
+import { FaHome, FaBolt, FaQuestionCircle, FaFileAlt, FaUserCircle } from "react-icons/fa";
+import { MdAdminPanelSettings } from "react-icons/md";
 import BASE_URL from "../config/config";
 
 function Quiz() {
@@ -13,26 +12,39 @@ function Quiz() {
   const [selected, setSelected] = useState(null);
   const [finished, setFinished] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // 📡 Fetch questions
+  // 🔥 fetch function (reusable)
+  const fetchQuestions = () => {
+    setLoading(true);
+    fetch(`${BASE_URL}/api/questions/random?type=aptitude`)
+      .then(res => res.json())
+      .then(data => {
+        setQuestions(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.log(err);
+        setLoading(false);
+      });
+  };
+
   useEffect(() => {
-  fetch(`${BASE_URL}/api/questions/random?type=aptitude`)
-    .then(res => res.json())
-    .then(data => setQuestions(data))
-    .catch(err => console.log(err));
-}, []);
+    fetchQuestions();
+  }, []);
 
-  if (questions.length === 0) return <h2 className="loading">Loading...</h2>;
+  if (loading) return <h2 className="loading">Loading... ⏳</h2>;
+  if (questions.length === 0) return <h2>No Questions 😢</h2>;
 
   const q = questions[current];
 
-  // 👉 Select option
+  // 👉 select
   const handleSelect = (option) => {
     if (showAnswer) return;
     setSelected(option);
   };
 
-  // 👉 Check answer
+  // 👉 check
   const handleCheck = () => {
     if (!selected) return;
 
@@ -43,7 +55,7 @@ function Quiz() {
     }
   };
 
-  // 👉 Next question
+  // 👉 next
   const handleNext = () => {
     setSelected(null);
     setShowAnswer(false);
@@ -55,28 +67,27 @@ function Quiz() {
     }
   };
 
-  // 👉 Result page
+  // 👉 restart (🔥 improved)
+  const handleRestart = () => {
+    fetchQuestions(); // 🔥 new questions
+    setCurrent(0);
+    setScore(0);
+    setSelected(null);
+    setFinished(false);
+    setShowAnswer(false);
+  };
+
+  // 👉 result
   if (finished) {
     return (
-      <>
-        <div className="quiz-result">
-          <h1> Quiz Completed</h1>
-          <h2>{score} / {questions.length}</h2>
+      <div className="quiz-result">
+        <h1>Quiz Completed 🎉</h1>
+        <h2>{score} / {questions.length}</h2>
 
-          <button
-            className="quiz-btn"
-            onClick={() => {
-  setCurrent(0);
-  setScore(0);
-  setSelected(null);
-  setFinished(false);
-  setShowAnswer(false);
-}}
-          >
-            Restart
-          </button>
-        </div>
-      </>
+        <button className="quiz-btn" onClick={handleRestart}>
+          Restart
+        </button>
+      </div>
     );
   }
 
@@ -90,12 +101,13 @@ function Quiz() {
           <li><Link to="/pulse">Pulse</Link></li>
           <li><Link to="/pyqs">PYQs</Link></li>
           <li><Link to="/quiz">Quiz</Link></li>
-          <li><Link to='/profile'><FaUserCircle size={24} /></Link></li>
-          <li className="profile-icon">
+          <li><Link to="/profile"><FaUserCircle size={24} /></Link></li>
+          <li>
             <Link to="/admin/upload"><MdAdminPanelSettings size={24} /></Link>
           </li>
         </ul>
       </nav>
+
       <div className="quiz-container">
         <h2>Question {current + 1} / {questions.length}</h2>
 
@@ -104,12 +116,10 @@ function Quiz() {
         {q.options.map((opt, i) => {
           let className = "quiz-option";
 
-          // 👉 Before answer reveal (selected highlight)
           if (!showAnswer && selected === opt) {
             className += " selected";
           }
 
-          // 👉 After answer reveal
           if (showAnswer) {
             if (opt === q.answer) className += " correct";
             else if (opt === selected) className += " wrong";
@@ -126,7 +136,6 @@ function Quiz() {
           );
         })}
 
-        {/* 🔘 Buttons */}
         {!showAnswer ? (
           <button
             className="quiz-btn"
@@ -136,20 +145,18 @@ function Quiz() {
             Check Answer
           </button>
         ) : (
-          <button
-            className="quiz-btn"
-            onClick={handleNext}
-          >
+          <button className="quiz-btn" onClick={handleNext}>
             Next
           </button>
         )}
       </div>
-       <div className="bottom-nav">
-        <div><Link to="/home"><FaHome size={24}/></Link></div>
-        <div><Link to="/pulse"><FaBolt size={24} /></Link></div>
-        <div><Link to="/pyqs"><FaFileAlt size={24} /> </Link></div>
-        <div><Link to="/quiz"><FaQuestionCircle size={24} /></Link></div>
-        <div><Link to='/profile'><FaUserCircle size={24} /></Link></div>
+
+      <div className="bottom-nav">
+        <Link to="/home"><FaHome size={24} /></Link>
+        <Link to="/pulse"><FaBolt size={24} /></Link>
+        <Link to="/pyqs"><FaFileAlt size={24} /></Link>
+        <Link to="/quiz"><FaQuestionCircle size={24} /></Link>
+        <Link to="/profile"><FaUserCircle size={24} /></Link>
       </div>
     </>
   );

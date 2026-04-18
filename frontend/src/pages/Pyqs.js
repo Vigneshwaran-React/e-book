@@ -12,7 +12,8 @@ function Pyqs() {
   useEffect(() => {
     fetch(`${BASE_URL}/api/upload/pyqs`)
       .then((res) => res.json())
-      .then((data) => setPyqs(data));
+      .then((data) => setPyqs(data))
+      .catch(err => console.log(err));
   }, []);
 
   return (
@@ -37,26 +38,30 @@ function Pyqs() {
       <div className="pyq-container">
         <h2>Previous Year Question Papers</h2>
 
-        {pyqs.map((item) => (
-          <div key={item._id} className="pyq-card">
-            <p>
-              <b>Class:</b> {item.classId} | <b>Subject:</b> {item.subject}
-            </p>
+        {pyqs.length === 0 ? (
+          <p style={{ textAlign: "center" }}>No PYQs available 📭</p>
+        ) : (
+          pyqs.map((item) => (
+            <div key={item._id} className="pyq-card">
+              <p>
+                <b>Class:</b> {item.classId} | <b>Subject:</b> {item.subject}
+              </p>
 
-            <button
-              className="pyq-btn"
-              onClick={() =>
-                navigate("/view-pdf", {
-                  state: {
-                    url: `${BASE_URL}${item.fileUrl}`,
-                  },
-                })
-              }
-            >
-              Open PDF
-            </button>
-          </div>
-        ))}
+              <button
+                className="pyq-btn"
+                onClick={() =>
+                  navigate("/view-pdf", {
+                    state: {
+                      url: item.fileUrl, // ✅ FIXED
+                    },
+                  })
+                }
+              >
+                Open PDF
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
       {/* BOTTOM NAV */}
