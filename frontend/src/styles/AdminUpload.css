@@ -1,0 +1,219 @@
+/* RESET */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #021c2c, #033b5c);
+  color: white;
+}
+
+/* MAIN CONTAINER */
+.upload-container {
+  max-width: 1000px;
+  margin:  auto;
+  padding: 20px;
+}
+
+/* TITLE */
+.upload-container h1 {
+  text-align: center;
+  color: orange;
+  margin-bottom: 30px;
+}
+
+/* TOP CONTROLS (class + subject) */
+.top-controls {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.top-controls select {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #0a2a3f;
+  color: white;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ===================== */
+/* 🔥 TOP ROW (PDF + VIDEO) */
+/* ===================== */
+.top-row {
+  display: flex;
+  gap: 20px;
+}
+
+/* ===================== */
+/* BOX STYLE */
+/* ===================== */
+.upload-box {
+  flex: 1;
+  background: #0a2a3f;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  transition: 0.3s;
+}
+
+/* HOVER EFFECT */
+.upload-box:hover {
+  transform: translateY(-5px);
+}
+
+/* TITLE */
+.upload-box h3 {
+  margin-bottom: 15px;
+  color: #ffb347;
+}
+
+/* INPUTS */
+.upload-box input,
+.upload-box select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: #122f44;
+  color: white;
+  font-size: 14px;
+}
+
+/* PLACEHOLDER */
+.upload-box input::placeholder {
+  color: #aaa;
+}
+
+/* FILE INPUT */
+.upload-box input[type="file"] {
+  cursor: pointer;
+}
+
+/* FOCUS EFFECT */
+.upload-box input:focus,
+.upload-box select:focus {
+  box-shadow: 0 0 6px orange;
+}
+
+/* BUTTON */
+.upload-box button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 14px;
+  background: linear-gradient(90deg, #ff8c00, #ff6a00);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* BUTTON HOVER */
+.upload-box button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #ffa733, #ff7a00);
+}
+
+/* ===================== */
+/* FULL WIDTH QUESTION */
+/* ===================== */
+/* 🔥 QUESTION BOX */
+.full-width {
+  margin-top: 25px;
+  width: 100%;
+  padding: 30px;
+  box-sizing: border-box; /* 🔥 VERY IMPORTANT */
+}
+
+/* 🔥 ALL INPUTS FIX */
+.full-width input,
+.full-width select {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  box-sizing: border-box; /* 🔥 prevents overflow */
+}
+
+/* 🔥 OPTION GRID (super clean layout) */
+.full-width input:nth-child(n+4):nth-child(-n+7) {
+  width: 100%;
+}
+
+/* 🔥 BUTTON */
+.full-width button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 14px;
+  font-size: 16px;
+}
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* ===================== */
+/* MOBILE RESPONSIVE */
+/* ===================== */
+@media (max-width: 768px) {
+
+  .top-controls {
+    flex-direction: column;
+  }
+
+  .top-row {
+    flex-direction: column;
+  }
+
+  .upload-container {
+    padding: 15px;
+  }
+}
+/* CUSTOM FILE BUTTON */
+.file-upload {
+  display: inline-block;
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #ff8c00, #ff6a00);
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  transition: 0.3s;
+}
+
+/* Hover effect */
+.file-upload:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #ffa733, #ff7a00);
+}
+.back-btn {
+  display: inline-block;
+  margin: 15px;
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.back-btn:hover {
+  color: orange;
+}
+.upload-box{
+  margin-top: 20px ;
+}

@@ -1,0 +1,94 @@
+/* 🔥 FULL PAGE CENTER */
+.login-container {
+  height: 78vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  font-family: 'Segoe UI', sans-serif;
+  padding: 15px;
+}
+
+/* 🔥 LOGIN CARD */
+.login-card {
+  background: #1e293b;
+  padding: 30px 25px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 350px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* 🔥 TITLE */
+.login-title {
+  margin-bottom: 20px;
+  color: white;
+  font-size: 22px;
+}
+
+/* 🔥 INPUT */
+.login-input {
+  width: 100%;
+  padding: 12px 5px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  background: #0f172a;
+  color: white;
+  font-size: 15px;
+}
+
+/* 🔥 INPUT FOCUS */
+.login-input:focus {
+  border: 1px solid orange;
+}
+
+/* 🔥 BUTTON */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #ff8c00, #ff6a00);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* 🔥 BUTTON HOVER */
+.login-btn:hover {
+  background: linear-gradient(135deg, #ff6a00, #ff3c00);
+  transform: scale(1.03);
+}
+
+/* ================= 📱 MOBILE ================= */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .login-title {
+    font-size: 18px;
+  }
+
+  .login-input {
+    font-size: 14px;
+    padding: 10px 5px;
+  }
+
+  .login-btn {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* ================= 📲 TABLET ================= */
+@media (max-width: 768px) {
+  .login-card {
+    max-width: 320px;
+  }
+}

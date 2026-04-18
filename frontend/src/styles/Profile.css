@@ -1,0 +1,59 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Container */
+.profile-container {
+  height: 100vh;
+  background: linear-gradient(135deg, #021c2c, #033b5c);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Card */
+.profile-card {
+  background: #0a2a3f;
+  padding: 30px;
+  border-radius: 15px;
+  width: 320px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.profile-card p {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+/* Logout button */
+.logout-btn {
+  margin-top: 20px;
+  padding: 12px 25px;
+  background: red;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: darkred;
+  transform: scale(1.05);
+}
+.back-btn {
+  display: inline-block;
+  margin: 15px;
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.back-btn:hover {
+  color: orange;
+}

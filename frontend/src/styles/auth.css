@@ -1,0 +1,152 @@
+/* full screen */
+.container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(270deg, #667eea, #764ba2, #ff758c);
+  background-size: 600% 600%;
+  animation: gradientMove 10s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+/* animated gradient */
+@keyframes gradientMove {
+  0% { background-position: 0% }
+  50% { background-position: 100% }
+  100% { background-position: 0% }
+}
+
+/* floating blobs */
+.bg-animation::before,
+.bg-animation::after {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  animation: float 6s infinite ease-in-out;
+}
+
+.bg-animation::before {
+  top: 10%;
+  left: 10%;
+}
+
+.bg-animation::after {
+  bottom: 10%;
+  right: 10%;
+  animation-delay: 3s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-30px); }
+}
+
+/* card */
+.card {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 350px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* inputs */
+.card input {
+  width: 100%;
+  padding: 10px 8px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  transition: 0.3s;
+}
+
+.card input:focus {
+  border-color: #667eea;
+  outline: none;
+  box-shadow: 0 0 5px #667eea;
+}
+
+/* button */
+.card button {
+  width: 100%;
+  padding: 10px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.card button:hover {
+  background: #5a67d8;
+  transform: scale(1.05);
+}
+
+/* toggle link */
+.card span {
+  color: blue;
+  cursor: pointer;
+  margin-left: 5px;
+}
+/* RESPONSIVE FIX */
+@media (max-width: 380px) {
+
+  .container {
+    padding: 10px; /* space from screen edges */
+  }
+
+  .card {
+    width: 100%;
+    max-width: 320px; /* control width */
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  .card input {
+    padding: 5px;
+    font-size: 14px;
+  }
+
+  .card button {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+.password-box {
+  position: relative;
+}
+
+.password-box input {
+  width: 100%;
+  /* padding: 10px; */
+  /* padding-right: 40px; */
+}
+
+.password-box span {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+}
+.card h2{
+  color: black;
+}
+p{
+  color: black;
+}

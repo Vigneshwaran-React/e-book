@@ -1,0 +1,146 @@
+/* 🔥 RESET */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+/* ================= NAVBAR ================= */
+/* .navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #ff8c00, #ff6a00);
+  padding: 12px 20px;
+  color: white;
+} */
+ .pyq-container{
+    margin-top: 50px;
+ }
+
+.logo {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.nav-links {
+  display: flex;
+  /* align-items: center; */
+  /* gap: 18px; */
+  list-style: none;
+  align-items: center;
+}
+
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  transition: 0.3s;
+}
+/* 🔥 BUTTON STYLE */
+.pyq-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #ff8c00, #ff6a00);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 8px;
+  transition: 0.3s;
+}
+
+.pyq-btn:hover {
+  background: linear-gradient(135deg, #ff6a00, #ff3c00);
+  transform: scale(1.05);
+}
+
+/* 🔥 CARD IMPROVEMENT */
+.pyq-card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.nav-links li a:hover {
+  color: rgb(255, 255, 0);
+}
+
+/* ================= MAIN ================= */
+.pyq-container {
+  padding: 20px;
+}
+
+.pyq-title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+/* ================= CARDS ================= */
+.pyq-card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  transition: 0.3s;
+}
+
+.pyq-card:hover {
+  transform: translateY(-3px);
+}
+
+.pyq-info {
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+/* ================= BUTTON ================= */
+.pyq-btn {
+  display: inline-block;
+  background: #ff8c00;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+.pyq-btn:hover {
+  background: #ff6a00;
+}
+
+/* ================= EMPTY ================= */
+.empty-text {
+  text-align: center;
+  margin-top: 40px;
+  color: #ccc;
+}
+
+/* ================= BOTTOM NAV ================= */
+/* .bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #1e293b;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid #333;
+}
+
+.bottom-nav a {
+  color: white;
+  text-decoration: none;
+  transition: 0.3s;
+} */
+
+.bottom-nav a:hover {
+  color: orange;
+}
