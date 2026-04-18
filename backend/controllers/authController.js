@@ -7,6 +7,8 @@ const jwt = require("jsonwebtoken");
 
 // SEND OTP
 exports.sendOTP = async (req, res) => {
+  console.log("EMAIL:", process.env.EMAIL_USER);
+  console.log("PASS:", process.env.EMAIL_PASS);
   try {
     const { email, username } = req.body;
 
