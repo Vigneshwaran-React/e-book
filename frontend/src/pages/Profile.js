@@ -10,40 +10,48 @@ function Profile() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const email = localStorage.getItem("email");
+  const email = localStorage.getItem("email");
+  const token = localStorage.getItem("token");
 
-    if (!email) {
-      navigate("/"); // 🔥 redirect if not logged in
-      return;
+  if (!email || !token) {
+    navigate("/");
+    return;
+  }
+
+  fetch(`${BASE_URL}/api/auth/me/${email}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
     }
-
-    // 🔥 FETCH USER
-    fetch(`${BASE_URL}/api/auth/me/${email}`)
-      .then(res => res.json())
-      .then(data => {
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        alert(data.error);
+        navigate("/");
+      } else {
         setUser(data);
-      })
-      .catch(err => {
-        console.log(err);
-        alert("Failed to load profile ❌");
-      });
+      }
+    })
+    .catch(err => {
+      console.log(err);
+      alert("Failed to load profile ❌");
+    });
 
-    // 🔥 TIME TRACK
-    let start = Number(localStorage.getItem("startTime"));
+  let start = Number(localStorage.getItem("startTime"));
 
-    if (!start) {
-      start = Date.now();
-      localStorage.setItem("startTime", start);
-    }
+  if (!start) {
+    start = Date.now();
+    localStorage.setItem("startTime", start);
+  }
 
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const diff = Math.floor((now - start) / 1000);
-      setTimeSpent(diff);
-    }, 1000);
+  const interval = setInterval(() => {
+    const now = Date.now();
+    const diff = Math.floor((now - start) / 1000);
+    setTimeSpent(diff);
+  }, 1000);
 
-    return () => clearInterval(interval);
-  }, [navigate]);
+  return () => clearInterval(interval);
+}, [navigate]);
 
   // ⏱️ FORMAT TIME
   const formatTime = (sec) => {

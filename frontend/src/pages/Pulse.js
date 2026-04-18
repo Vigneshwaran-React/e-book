@@ -78,14 +78,15 @@ function PulsePage() {
         {videos.map((v, i) => (
           <div className="reel" key={v._id}>
             <video
-              ref={(el) => (videoRefs.current[i] = el)}
-              src={v.fileUrl} // ✅ FIXED
-              loop
-              muted // 🔥 autoplay work panna
-              playsInline
-              className="video"
-              onClick={(e) => togglePlay(e.target)}
-            />
+  ref={(el) => (videoRefs.current[i] = el)}
+  src={v.fileUrl}
+  loop
+  muted
+  autoPlay   // ✅ ADD THIS
+  playsInline
+  className="video"
+  onClick={(e) => togglePlay(e.target)}
+/>
 
             <div className="controls">
               <button onClick={() => togglePlay(videoRefs.current[i])}>

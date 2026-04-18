@@ -1,14 +1,26 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
+import { useEffect, useState } from "react";
 import "../styles/pdf.css";
 
 function PdfViewer() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const pdfUrl = location.state?.url;
+  const [pdfUrl, setPdfUrl] = useState("");
 
-  // 🚨 safety check
+  useEffect(() => {
+    // try from state
+    if (location.state?.url) {
+      setPdfUrl(location.state.url);
+      localStorage.setItem("pdfUrl", location.state.url); // backup
+    } else {
+      // fallback from localStorage
+      const saved = localStorage.getItem("pdfUrl");
+      if (saved) setPdfUrl(saved);
+    }
+  }, [location.state]);
+
   if (!pdfUrl) {
     return (
       <div style={{ textAlign: "center", padding: "50px" }}>
@@ -20,13 +32,10 @@ function PdfViewer() {
 
   return (
     <div className="pdf-container">
-
-      {/* BACK BUTTON */}
       <div className="pdf-back" onClick={() => navigate(-1)}>
         <FaArrowLeft /> Back
       </div>
 
-      {/* PDF VIEW */}
       <iframe
         src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
         title="PDF Viewer"
