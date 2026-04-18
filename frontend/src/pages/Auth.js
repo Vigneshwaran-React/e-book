@@ -24,13 +24,17 @@ function Auth() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ email, username }),
-    });
+      
+    }
+  );
 
     const data = await res.json();
 
     if (data.success) {
       setStep(2);
     } else alert(data.message);
+    console.log("EMAIL:", process.env.EMAIL_USER);
+console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
   };
 
   // 🔥 VERIFY OTP
