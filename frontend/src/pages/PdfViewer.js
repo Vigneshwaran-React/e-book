@@ -10,12 +10,10 @@ function PdfViewer() {
   const [pdfUrl, setPdfUrl] = useState("");
 
   useEffect(() => {
-    // try from state
     if (location.state?.url) {
       setPdfUrl(location.state.url);
-      localStorage.setItem("pdfUrl", location.state.url); // backup
+      localStorage.setItem("pdfUrl", location.state.url);
     } else {
-      // fallback from localStorage
       const saved = localStorage.getItem("pdfUrl");
       if (saved) setPdfUrl(saved);
     }
@@ -30,6 +28,12 @@ function PdfViewer() {
     );
   }
 
+  // 🔥 IMPORTANT FIX
+  const viewUrl = pdfUrl.replace(
+    "/upload/",
+    "/upload/fl_attachment:false/"
+  );
+
   return (
     <div className="pdf-container">
       <div className="pdf-back" onClick={() => navigate(-1)}>
@@ -37,7 +41,7 @@ function PdfViewer() {
       </div>
 
       <iframe
-        src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+        src={viewUrl}   // ✅ use modified URL
         title="PDF Viewer"
         className="pdf-frame"
         width="100%"
