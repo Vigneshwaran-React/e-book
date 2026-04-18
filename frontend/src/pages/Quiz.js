@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { FaHome, FaBolt, FaQuestionCircle, FaFileAlt } from "react-icons/fa";
 import { FaUserCircle } from "react-icons/fa";
 import { MdAdminPanelSettings } from "react-icons/md"
+import BASE_URL from "../config/config";
 
 function Quiz() {
   const [questions, setQuestions] = useState([]);
@@ -15,11 +16,11 @@ function Quiz() {
 
   // 📡 Fetch questions
   useEffect(() => {
-    fetch("http://localhost:5000/api/questions/random?type=aptitude")
-      .then(res => res.json())
-      .then(data => setQuestions(data))
-      .catch(err => console.log(err));
-  }, []);
+  fetch(`${BASE_URL}/api/questions/random?type=aptitude`)
+    .then(res => res.json())
+    .then(data => setQuestions(data))
+    .catch(err => console.log(err));
+}, []);
 
   if (questions.length === 0) return <h2 className="loading">Loading...</h2>;
 

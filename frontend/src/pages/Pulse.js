@@ -5,6 +5,8 @@ import { MdAdminPanelSettings } from "react-icons/md"
 import { Link } from "react-router-dom";
 import { FaHome, FaBolt, FaQuestionCircle, FaFileAlt } from "react-icons/fa";
 import { FaPlay, FaPause, FaVolumeMute, FaVolumeUp } from "react-icons/fa";
+import BASE_URL from "../config/config";
+
 
 function PulsePage() {
   const [videos, setVideos] = useState([]);
@@ -12,7 +14,7 @@ function PulsePage() {
   const [, setRefresh] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/upload/videos")
+    fetch(`${BASE_URL}/api/upload/videos`)
       .then(res => res.json())
       .then(data => setVideos(data));
   }, []);
@@ -78,7 +80,7 @@ const toggleMute = (video) => {
           
           <video
   ref={(el) => (videoRefs.current[i] = el)}
-  src={`http://localhost:5000${v.fileUrl}`}
+  src={`${BASE_URL}${v.fileUrl}`}
   loop
   playsInline
   className="video"

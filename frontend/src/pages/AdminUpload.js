@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import "../styles/AdminUpload.css";
 import { Link, useNavigate } from "react-router-dom";
+import BASE_URL from "../config/config";
 
 function AdminUpload() {
   const [classId, setClassId] = useState("7");
@@ -30,13 +31,19 @@ function AdminUpload() {
     formData.append("classId", classId);
     formData.append("subject", subject);
 
-    await fetch("http://localhost:5000/api/upload/pdf", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
+    try {
+      const res = await fetch(`${BASE_URL}/api/upload/pdf`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
-    alert("PDF Uploaded 🔥");
+      const data = await res.json();
+      alert(data.message || "PDF Uploaded 🔥");
+    } catch (err) {
+      console.log(err);
+      alert("Upload failed ❌");
+    }
   };
 
   // 🎥 VIDEO Upload
@@ -49,13 +56,19 @@ function AdminUpload() {
     formData.append("classId", classId);
     formData.append("subject", subject);
 
-    await fetch("http://localhost:5000/api/upload/video", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
+    try {
+      const res = await fetch(`${BASE_URL}/api/upload/video`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
-    alert("Video Uploaded 🎥🔥");
+      const data = await res.json();
+      alert(data.message || "Video Uploaded 🎥🔥");
+    } catch (err) {
+      console.log(err);
+      alert("Upload failed ❌");
+    }
   };
 
   // 📚 PYQ Upload
@@ -68,30 +81,42 @@ function AdminUpload() {
     formData.append("classId", classId);
     formData.append("subject", subject);
 
-    await fetch("http://localhost:5000/api/upload/pyq", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
+    try {
+      const res = await fetch(`${BASE_URL}/api/upload/pyq`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
-    alert("PYQ Uploaded 📚🔥");
+      const data = await res.json();
+      alert(data.message || "PYQ Uploaded 📚🔥");
+    } catch (err) {
+      console.log(err);
+      alert("Upload failed ❌");
+    }
   };
 
   // ❓ QUESTION Upload
   const handleQuestionUpload = async () => {
-    await fetch("http://localhost:5000/api/questions/add", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type,
-        category,
-        question,
-        options,
-        answer,
-      }),
-    });
+    try {
+      const res = await fetch(`${BASE_URL}/api/questions/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type,
+          category,
+          question,
+          options,
+          answer,
+        }),
+      });
 
-    alert("Question Added");
+      const data = await res.json();
+      alert(data.message || "Question Added");
+    } catch (err) {
+      console.log(err);
+      alert("Failed ❌");
+    }
   };
 
   return (
@@ -120,7 +145,6 @@ function AdminUpload() {
             <option value="12">12</option>
             <option value="pulse">pulse</option>
             <option value="pyqs">pyqs</option>
-
           </select>
 
           <select onChange={(e) => setSubject(e.target.value)}>
@@ -155,56 +179,50 @@ function AdminUpload() {
         </div>
 
         <div className="upload-box full-width">
-  <h3>Add Question ❓</h3>
+          <h3>Add Question ❓</h3>
 
-  {/* TYPE */}
-  <select onChange={(e) => setType(e.target.value)}>
-    <option value="aptitude">Aptitude</option>
-    <option value="reasoning">Reasoning</option>
-  </select>
+          <select onChange={(e) => setType(e.target.value)}>
+            <option value="aptitude">Aptitude</option>
+            <option value="reasoning">Reasoning</option>
+          </select>
 
-  {/* CATEGORY */}
-  <input
-    type="text"
-    placeholder="Category (profit, time...)"
-    onChange={(e) => setCategory(e.target.value)}
-  />
+          <input
+            type="text"
+            placeholder="Category"
+            onChange={(e) => setCategory(e.target.value)}
+          />
 
-  {/* QUESTION */}
-  <input
-    type="text"
-    placeholder="Enter Question"
-    onChange={(e) => setQuestion(e.target.value)}
-  />
+          <input
+            type="text"
+            placeholder="Question"
+            onChange={(e) => setQuestion(e.target.value)}
+          />
 
-  {/* OPTIONS */}
-  <div className="options-grid">
-    {options.map((opt, i) => (
-      <input
-        key={i}
-        type="text"
-        placeholder={`Option ${i + 1}`}
-        onChange={(e) => {
-          const newOptions = [...options];
-          newOptions[i] = e.target.value;
-          setOptions(newOptions);
-        }}
-      />
-    ))}
-  </div>
+          <div className="options-grid">
+            {options.map((opt, i) => (
+              <input
+                key={i}
+                type="text"
+                placeholder={`Option ${i + 1}`}
+                onChange={(e) => {
+                  const newOptions = [...options];
+                  newOptions[i] = e.target.value;
+                  setOptions(newOptions);
+                }}
+              />
+            ))}
+          </div>
 
-  {/* CORRECT ANSWER */}
-  <input
-    type="text"
-    placeholder="Correct Answer"
-    onChange={(e) => setAnswer(e.target.value)}
-  />
+          <input
+            type="text"
+            placeholder="Correct Answer"
+            onChange={(e) => setAnswer(e.target.value)}
+          />
 
-  {/* BUTTON */}
-  <button onClick={handleQuestionUpload}>
-    Add Question
-  </button>
-</div>
+          <button onClick={handleQuestionUpload}>
+            Add Question
+          </button>
+        </div>
       </div>
     </>
   );

@@ -3,13 +3,14 @@ import { FaUserCircle, FaHome, FaBolt, FaQuestionCircle, FaFileAlt } from "react
 import { MdAdminPanelSettings } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/pyqs.css";
+import BASE_URL from "../config/config";
 
 function Pyqs() {
   const [pyqs, setPyqs] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/upload/pyqs")
+    fetch(`${BASE_URL}/api/upload/pyqs`)
       .then((res) => res.json())
       .then((data) => setPyqs(data));
   }, []);
@@ -47,7 +48,7 @@ function Pyqs() {
               onClick={() =>
                 navigate("/view-pdf", {
                   state: {
-                    url: `http://localhost:5000${item.fileUrl}`,
+                    url: `${BASE_URL}${item.fileUrl}`,
                   },
                 })
               }

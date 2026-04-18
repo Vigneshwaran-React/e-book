@@ -2,47 +2,43 @@ import { useEffect, useState } from "react";
 import "../styles/Profile.css";
 import { RiUser3Fill } from "react-icons/ri";
 import {Link} from 'react-router-dom'
+import BASE_URL from "../config/config";
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [timeSpent, setTimeSpent] = useState(0);
 
   useEffect(() => {
-    const email = localStorage.getItem("email");
+  const email = localStorage.getItem("email");
 
-    // ✅ safe check
-    if (!email) {
-      console.log("No email found ");
-      return;
-    }
+  if (!email) {
+    console.log("No email found ");
+    return;
+  }
 
-    // 🔥 fetch user
-    fetch(`http://localhost:5000/api/auth/me/${email}`)
-      .then(res => res.json())
-      .then(data => {
-        console.log("USER:", data);
-        setUser(data);
-      })
-      .catch(err => console.log(err));
+  fetch(`${BASE_URL}/api/auth/me/${email}`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("USER:", data);
+      setUser(data);
+    })
+    .catch(err => console.log(err));
 
-    // 🔥 get start time (convert to number)
-    let start = Number(localStorage.getItem("startTime"));
+  let start = Number(localStorage.getItem("startTime"));
 
-    // ✅ if not exists → set new
-    if (!start) {
-      start = Date.now();
-      localStorage.setItem("startTime", start);
-    }
+  if (!start) {
+    start = Date.now();
+    localStorage.setItem("startTime", start);
+  }
 
-    // ⏱️ timer
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const diff = Math.floor((now - start) / 1000);
-      setTimeSpent(diff);
-    }, 1000);
+  const interval = setInterval(() => {
+    const now = Date.now();
+    const diff = Math.floor((now - start) / 1000);
+    setTimeSpent(diff);
+  }, 1000);
 
-    return () => clearInterval(interval);
-  }, []);
+  return () => clearInterval(interval);
+}, []);
 
   // ⏱️ format time
   const formatTime = (sec) => {
