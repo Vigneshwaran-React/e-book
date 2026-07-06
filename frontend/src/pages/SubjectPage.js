@@ -9,27 +9,34 @@ function SubjectPage() {
 
   useEffect(() => {
     fetch(`${BASE_URL}/api/book?classId=${classId}&subject=${subject}`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         console.log("DATA:", data);
         setPdfLink(data?.pdfUrl);
       })
-      .catch(err => console.log(err));
+      .catch((err) => console.log(err));
   }, [classId, subject]);
 
   if (!pdfLink) {
     return <h2>Loading...</h2>;
   }
 
+  // Cloudinary full URL or old local URL support
+  const finalPdfUrl = pdfLink.startsWith("http")
+    ? pdfLink
+    : `${BASE_URL}${pdfLink}`;
+
   return (
     <>
       <div>
-        <Link to="/home" className="back-btn">← Back</Link>
+        <Link to="/home" className="back-btn">
+          ← Back
+        </Link>
       </div>
 
       <div style={{ height: "100vh" }}>
         <iframe
-          src={`${BASE_URL}${pdfLink}#toolbar=0&navpanes=0&scrollbar=0`}
+          src={`${finalPdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
           title="Book Viewer"
           width="100%"
           height="100%"
