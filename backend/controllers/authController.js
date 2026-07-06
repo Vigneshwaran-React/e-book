@@ -1,11 +1,14 @@
 const User = require("../models/User");
-const transporter = require("../config/mailer");
+const { Resend } = require("resend");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// SEND OTP
+
+// ================= SEND OTP =================
+
 exports.sendOTP = async (req, res) => {
   try {
     const { email, username } = req.body;
@@ -27,7 +30,10 @@ exports.sendOTP = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      user = new User({ email, username });
+      user = new User({
+        email,
+        username,
+      });
     }
 
     user.username = username;
@@ -36,21 +42,31 @@ exports.sendOTP = async (req, res) => {
 
     await user.save();
 
-    console.log("Attempting to send OTP email...");
+    console.log("Attempting to send OTP using Resend...");
 
-    await transporter.sendMail({
-      from: `"E-Book App" <${process.env.EMAIL_USER}>`,
-      to: email,
+    const { data, error } = await resend.emails.send({
+      from: "E-Book App <onboarding@resend.dev>",
+      to: [email],
       subject: "Your OTP Code",
       text: `Your OTP is ${otp}. It expires in 5 minutes.`,
     });
 
-    console.log("OTP email sent successfully");
+    if (error) {
+      console.error("RESEND ERROR:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    console.log("OTP sent successfully:", data);
 
     return res.status(200).json({
       success: true,
       message: "OTP sent to email",
     });
+
   } catch (error) {
     console.error("SEND OTP ERROR:", error);
 
@@ -62,6 +78,9 @@ exports.sendOTP = async (req, res) => {
   }
 };
 
+
+// ================= VERIFY OTP =================
+
 exports.verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -69,11 +88,17 @@ exports.verifyOTP = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.json({ success: false, message: "User not found" });
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     if (user.otp !== otp || user.otpExpiry < Date.now()) {
-      return res.json({ success: false, message: "Invalid or expired OTP" });
+      return res.json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
     }
 
     user.isVerified = true;
@@ -81,14 +106,22 @@ exports.verifyOTP = async (req, res) => {
 
     await user.save();
 
-    res.json({ success: true, message: "OTP verified" });
+    return res.json({
+      success: true,
+      message: "OTP verified",
+    });
+
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 
-// SET PASSWORD
+// ================= SET PASSWORD =================
+
 exports.setPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -96,22 +129,34 @@ exports.setPassword = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user || !user.isVerified) {
-      return res.json({ success: false, message: "OTP not verified" });
+      return res.json({
+        success: false,
+        message: "OTP not verified",
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     user.password = hashedPassword;
+
     await user.save();
 
-    res.json({ success: true, message: "Password set successfully" });
+    return res.json({
+      success: true,
+      message: "Password set successfully",
+    });
+
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
 
-// LOGIN
+// ================= LOGIN =================
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -119,27 +164,37 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.json({ success: false, message: "User not found" });
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.json({ success: false, message: "Invalid password" });
+      return res.json({
+        success: false,
+        message: "Invalid password",
+      });
     }
 
-   const token = jwt.sign(
-  { id: user._id },
-  process.env.JWT_SECRET,
-  { expiresIn: "1d" }
-);
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
 
-    res.json({
+    return res.json({
       success: true,
       message: "Login successful",
       token,
     });
+
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
