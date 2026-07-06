@@ -8,12 +8,12 @@ const storage = multer.diskStorage({
 
     let uploadPath = "";
 
-    // 🎥 Video
+    //  Video
     if (file.mimetype.startsWith("video")) {
       uploadPath = path.join(__dirname, "..", "uploads", "videos");
     }
 
-    // 📚 PYQ PDF
+    //  PYQ PDF
     else if (
       file.mimetype === "application/pdf" &&
       req.body.type === "pyq"
@@ -21,17 +21,17 @@ const storage = multer.diskStorage({
       uploadPath = path.join(__dirname, "..", "uploads", "pyqs");
     }
 
-    // 📄 Normal PDF
+    //  Normal PDF
     else if (file.mimetype === "application/pdf") {
       uploadPath = path.join(__dirname, "..", "uploads", "pdfs");
     }
 
-    // 📦 Others
+    //  Others
     else {
       uploadPath = path.join(__dirname, "..", "uploads");
     }
 
-    // 🔥 auto create folder
+    //  auto create folder
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }

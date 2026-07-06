@@ -4,8 +4,7 @@ const Question = require("../models/Question");
 
 
 // ==========================================
-// ✅ ADD QUESTION
-// ==========================================
+// ADD QUESTION
 router.post("/add", async (req, res) => {
   try {
     const { type, category, question, options, answer } = req.body;
@@ -28,8 +27,7 @@ router.post("/add", async (req, res) => {
 
 
 // ==========================================
-// 🔥 GET RANDOM QUESTIONS
-// ==========================================
+//  GET RANDOM QUESTIONS
 router.get("/random", async (req, res) => {
   try {
     const { type } = req.query;
@@ -47,8 +45,7 @@ router.get("/random", async (req, res) => {
 
 
 // ==========================================
-// 🎯 GET BY CATEGORY (optional)
-// ==========================================
+// GET BY CATEGORY (optional)
 router.get("/category", async (req, res) => {
   try {
     const { type, category } = req.query;
@@ -66,8 +63,7 @@ router.get("/category", async (req, res) => {
 
 
 // ==========================================
-// ❌ DELETE QUESTION
-// ==========================================
+// DELETE QUESTION
 router.delete("/:id", async (req, res) => {
   try {
     await Question.findByIdAndDelete(req.params.id);
@@ -76,7 +72,6 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// 🔥 BULK ADD QUESTIONS
 router.post("/bulk", async (req, res) => {
   try {
     const questions = req.body;

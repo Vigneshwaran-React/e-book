@@ -6,10 +6,8 @@ const { uploadBook } = require("../controllers/bookController");
 const { verifyToken } = require("../middleware/auth");
 const Book = require("../models/Book");
 
-// ✅ Upload route (single only)
 router.post("/upload", upload.single("pdf"), uploadBook);
 
-// ✅ GET BOOK (IMPORTANT 🔥)
 router.get("/book", async (req, res) => {
   try {
     const { classId, subject } = req.query;
@@ -17,7 +15,7 @@ router.get("/book", async (req, res) => {
     console.log("QUERY:", classId, subject);
 
     const book = await Book.findOne({
-      classId: String(classId),   // 🔥 MUST
+      classId: String(classId),   
       subject: subject.toLowerCase()
     });
 

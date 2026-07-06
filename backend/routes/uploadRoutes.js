@@ -20,22 +20,22 @@ const storage = multer.diskStorage({
       uploadPath = path.join(__dirname, "..", "uploads", "videos");
     }
 
-    // 📚 PYQ
+    //  PYQ
     else if (req.originalUrl.includes("/pyq")) {
       uploadPath = path.join(__dirname, "..", "uploads", "pyqs");
     }
 
-    // 📄 PDF
+    //  PDF
     else if (req.originalUrl.includes("/pdf")) {
       uploadPath = path.join(__dirname, "..", "uploads", "pdfs");
     }
 
-    // 📦 fallback
+    //  fallback
     else {
       uploadPath = path.join(__dirname, "..", "uploads");
     }
 
-    // 🔥 auto create folder
+    //  auto create folder
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
@@ -43,7 +43,7 @@ const storage = multer.diskStorage({
     cb(null, uploadPath);
   },
 
-  // 🔥 SAFE FILE NAME
+  //  SAFE FILE NAME
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname);
     cb(null, Date.now() + ext);
@@ -56,7 +56,7 @@ const upload = multer({
 });
 
 // =====================================================
-// 🎥 VIDEO UPLOAD
+//  VIDEO UPLOAD
 // =====================================================
 router.post("/video", (req, res) => {
   upload.single("video")(req, res, async (err) => {
@@ -74,7 +74,7 @@ router.post("/video", (req, res) => {
 
       await newVideo.save();
 
-      res.json({ message: "Video uploaded 🎥", data: newVideo });
+      res.json({ message: "Video uploaded ", data: newVideo });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
@@ -90,7 +90,7 @@ router.get("/videos", async (req, res) => {
   }
 });
 // =====================================================
-// 📄 PDF UPLOAD
+//  PDF UPLOAD
 // =====================================================
 
 
@@ -110,12 +110,12 @@ router.post("/pdf", (req, res) => {
         pdfUrl: `/uploads/pdfs/${req.file.filename}`,
       });
 
-      await newBook.save(); // 🔥 THIS WAS MISSING
+      await newBook.save(); 
 
       console.log("Saved to DB:", newBook);
 
       res.json({
-        message: "PDF uploaded & saved 📄🔥",
+        message: "PDF uploaded & saved ",
         data: newBook,
       });
 
@@ -127,7 +127,7 @@ router.post("/pdf", (req, res) => {
 });
 
 // =====================================================
-// 📚 PYQ UPLOAD
+// PYQ UPLOAD
 // =====================================================
 router.post("/pyq", (req, res) => {
   upload.single("pdf")(req, res, async (err) => {
@@ -146,7 +146,7 @@ router.post("/pyq", (req, res) => {
       await newPyq.save();
 
       res.json({
-        message: "PYQ uploaded 📚🔥",
+        message: "PYQ uploaded ",
         data: newPyq,
       });
     } catch (err) {
@@ -156,7 +156,7 @@ router.post("/pyq", (req, res) => {
 });
 
 // =====================================================
-// 📥 GET ALL PYQS
+//  GET ALL PYQS
 // =====================================================
 router.get("/pyqs", async (req, res) => {
   try {
@@ -168,7 +168,7 @@ router.get("/pyqs", async (req, res) => {
 });
 
 // =====================================================
-// ❌ DELETE PYQ
+//  DELETE PYQ
 // =====================================================
 router.delete("/pyq/:id", async (req, res) => {
   try {
@@ -188,7 +188,7 @@ router.delete("/pyq/:id", async (req, res) => {
 
     await PyqModel.findByIdAndDelete(req.params.id);
 
-    res.json({ message: "Deleted ❌" });
+    res.json({ message: "Deleted " });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -11,7 +11,7 @@ exports.uploadBook = async (req, res) => {
 
     const { classId, subject } = req.body;
 
-    const fileUrl = `/uploads/pdfs/${req.file.filename}`; // ✅ FIX
+    const fileUrl = `/uploads/pdfs/${req.file.filename}`; 
 
     const book = new Book({
       classId,
@@ -21,7 +21,7 @@ exports.uploadBook = async (req, res) => {
 
     await book.save();
 
-    console.log("Saved to DB ✅");
+    console.log("Saved to DB ");
 
     res.json({ success: true, book });
 

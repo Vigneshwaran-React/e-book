@@ -5,34 +5,22 @@ const cors = require("cors");
 const path = require("path");
 const app = express();
 
-// 🔥 ENV + DB
 dotenv.config();
 connectDB();
 
-// 🔥 MIDDLEWARE
 
-app.use(cors({
-  origin: "https://study-ebook.netlify.app",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 
-// 🔥 STATIC FILES (important → before routes is better)
 // app.use("/uploads", express.static("uploads"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-// =====================================================
-// 📦 ROUTES
 // =====================================================
 app.use("/api", require("./routes/bookRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/questions", require("./routes/QuestionRoutes"));
 
-// 🔥 UPLOAD ROUTES
 const uploadRoutes = require("./routes/uploadRoutes");
 app.use("/api/upload", uploadRoutes);
-// =====================================================
-// ❌ GLOBAL ERROR HANDLER (optional but pro 🔥)
 // =====================================================
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -40,10 +28,8 @@ app.use((err, req, res, next) => {
 });
 
 // =====================================================
-// 🚀 SERVER
-// =====================================================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} 🚀`);
+  console.log(`Server running on port ${PORT} `);
 });

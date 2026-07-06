@@ -15,13 +15,13 @@ function AdminUpload() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  // 🔐 PROTECT PAGE
+  //  PROTECT PAGE
   useEffect(() => {
     const isAdmin = localStorage.getItem("admin");
     if (!isAdmin) navigate("/admin/login");
   }, [navigate]);
 
-  // 📄 PDF Upload
+  //  PDF Upload
   const handlePdfUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -39,14 +39,14 @@ function AdminUpload() {
       });
 
       const data = await res.json();
-      alert(data.message || "PDF Uploaded 🔥");
+      alert(data.message || "PDF Uploaded ");
     } catch (err) {
       console.log(err);
-      alert("Upload failed ❌");
+      alert("Upload failed ");
     }
   };
 
-  // 🎥 VIDEO Upload
+  // VIDEO Upload
   const handleVideoUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -64,14 +64,14 @@ function AdminUpload() {
       });
 
       const data = await res.json();
-      alert(data.message || "Video Uploaded 🎥🔥");
+      alert(data.message || "Video Uploaded ");
     } catch (err) {
       console.log(err);
-      alert("Upload failed ❌");
+      alert("Upload failed ");
     }
   };
 
-  // 📚 PYQ Upload
+  //  PYQ Upload
   const handlePyqUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -89,14 +89,14 @@ function AdminUpload() {
       });
 
       const data = await res.json();
-      alert(data.message || "PYQ Uploaded 📚🔥");
+      alert(data.message || "PYQ Uploaded ");
     } catch (err) {
       console.log(err);
-      alert("Upload failed ❌");
+      alert("Upload failed ");
     }
   };
 
-  // ❓ QUESTION Upload
+  //  QUESTION Upload
   const handleQuestionUpload = async () => {
     try {
       const res = await fetch(`${BASE_URL}/api/questions/add`, {
@@ -115,7 +115,7 @@ function AdminUpload() {
       alert(data.message || "Question Added");
     } catch (err) {
       console.log(err);
-      alert("Failed ❌");
+      alert("Failed ");
     }
   };
 
@@ -123,7 +123,7 @@ function AdminUpload() {
     <>
       <Link to="/home" className="back-btn">← Back</Link>
 
-      <button
+      <button className="logout"
         onClick={() => {
           localStorage.removeItem("admin");
           navigate("/admin/login");
@@ -179,7 +179,7 @@ function AdminUpload() {
         </div>
 
         <div className="upload-box full-width">
-          <h3>Add Question ❓</h3>
+          <h3>Add Question...</h3>
 
           <select onChange={(e) => setType(e.target.value)}>
             <option value="aptitude">Aptitude</option>

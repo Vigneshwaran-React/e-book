@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import BASE_URL from "../config/config";
 import "../styles/auth.css";
 
+
 function Auth() {
   const [isSignup, setIsSignup] = useState(true);
 
@@ -16,7 +17,7 @@ function Auth() {
 
   const navigate = useNavigate();
 
-  // 🔥 SEND OTP
+  //  SEND OTP
   const sendOTP = async () => {
     
     const res = await fetch(`${BASE_URL}/api/auth/send-otp`, {
@@ -39,7 +40,7 @@ function Auth() {
 console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
   };
 
-  // 🔥 VERIFY OTP
+  //  VERIFY OTP
   const verifyOTP = async () => {
     const res = await fetch(`${BASE_URL}/api/auth/verify-otp`, {
       method: "POST",
@@ -56,7 +57,7 @@ console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
     } else alert(data.message);
   };
 
-  // 🔥 SET PASSWORD
+  //  SET PASSWORD
   const setPass = async () => {
     const res = await fetch(`${BASE_URL}/api/auth/set-password`, {
       method: "POST",
@@ -75,7 +76,7 @@ console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
     } else alert(data.message);
   };
 
-  // 🔥 LOGIN
+  //  LOGIN
   const login = async () => {
     const res = await fetch(`${BASE_URL}/api/auth/login`, {
       method: "POST",
@@ -142,7 +143,7 @@ console.log("PASS:", process.env.EMAIL_PASS ? "EXISTS" : "MISSING");
   />
 
   <span onClick={() => setShowPassword(!showPassword)}>
-    {showPassword ? "🙈" : "👁️"}
+    {showPassword ? "👁️" : "🙈"}
   </span>
 </div>
             <button onClick={setPass}>Complete Signup</button>

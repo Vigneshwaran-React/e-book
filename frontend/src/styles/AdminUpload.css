@@ -217,3 +217,15 @@ body {
 .upload-box{
   margin-top: 20px ;
 }
+.logout{
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #ff7a00;
+  color: white;
+}
+.logout:hover{
+  color: orange;
+  background-color: #122f44;
+
+}
