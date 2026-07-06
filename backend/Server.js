@@ -22,6 +22,16 @@ app.use("/api/questions", require("./routes/QuestionRoutes"));
 const uploadRoutes = require("./routes/uploadRoutes");
 app.use("/api/upload", uploadRoutes);
 // =====================================================
+
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "E-Book Backend API is running"
+  });
+});
+
+// =======================================================
+
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong" });
