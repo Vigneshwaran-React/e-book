@@ -7,14 +7,21 @@ const jwt = require("jsonwebtoken");
 
 // SEND OTP
 exports.sendOTP = async (req, res) => {
-  console.log("EMAIL:", process.env.EMAIL_USER);
-  console.log("PASS:", process.env.EMAIL_PASS);
   try {
     const { email, username } = req.body;
 
+    if (!email || !username) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and username are required",
+      });
+    }
+
     const otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
       specialChars: false,
+      digits: true,
     });
 
     let user = await User.findOne({ email });
@@ -23,22 +30,35 @@ exports.sendOTP = async (req, res) => {
       user = new User({ email, username });
     }
 
+    user.username = username;
     user.otp = otp;
     user.otpExpiry = Date.now() + 5 * 60 * 1000;
 
     await user.save();
 
-    // send mail
+    console.log("Attempting to send OTP email...");
+
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: `"E-Book App" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your OTP Code",
-      text: `Your OTP is ${otp}`,
+      text: `Your OTP is ${otp}. It expires in 5 minutes.`,
     });
 
-    res.json({ success: true, message: "OTP sent to email" });
+    console.log("OTP email sent successfully");
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent to email",
+    });
   } catch (error) {
-    res.json({ success: false, message: error.message });
+    console.error("SEND OTP ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to send OTP email",
+      error: error.message,
+    });
   }
 };
 
@@ -108,11 +128,11 @@ exports.login = async (req, res) => {
       return res.json({ success: false, message: "Invalid password" });
     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      "secretkey",
-      { expiresIn: "1d" }
-    );
+   const token = jwt.sign(
+  { id: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "1d" }
+);
 
     res.json({
       success: true,
