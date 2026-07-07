@@ -153,9 +153,9 @@ function PulsePage() {
         {videos.map((v, i) => {
 
           // Cloudinary URL or old local URL support
-          const finalVideoUrl = v.fileUrl?.startsWith("http")
-            ? v.fileUrl
-            : `${BASE_URL}${v.fileUrl}`;
+          // const finalVideoUrl = v.fileUrl?.startsWith("http")
+          //   ? v.fileUrl
+          //   : `${BASE_URL}${v.fileUrl}`;
 
 
           return (
@@ -165,7 +165,7 @@ function PulsePage() {
                 ref={(el) => {
                   videoRefs.current[i] = el;
                 }}
-                src={finalVideoUrl}
+                src={v.fileUrl}
                 loop
                 playsInline
                 muted
