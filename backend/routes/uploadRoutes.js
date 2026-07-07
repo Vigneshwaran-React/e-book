@@ -1,100 +1,142 @@
-  const express = require("express");
-  const router = express.Router();
-  const multer = require("multer");
-  const fs = require("fs");
-  const path = require("path");
+const express = require("express");
+const router = express.Router();
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
+
 const cloudinary = require("../config/cloudinary");
-  const Video = require("../models/Video");
-  const PyqModel = require("../models/Pyq");
-  const Book = require("../models/Book");
 
-  // =====================================================
-  // 📦 MULTER SETUP (FIXED 🔥)
-  // =====================================================
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      let uploadPath = "";
+const Video = require("../models/Video");
+const PyqModel = require("../models/Pyq");
+const Book = require("../models/Book");
 
-      // 🎥 VIDEO
-      if (req.originalUrl.includes("/video")) {
-        uploadPath = path.join(__dirname, "..", "uploads", "videos");
-      }
 
-      //  PYQ
-      else if (req.originalUrl.includes("/pyq")) {
-        uploadPath = path.join(__dirname, "..", "uploads", "pyqs");
-      }
+// =====================================================
+// MULTER LOCAL TEMP STORAGE
+// =====================================================
 
-      //  PDF
-      else if (req.originalUrl.includes("/pdf")) {
-        uploadPath = path.join(__dirname, "..", "uploads", "pdfs");
-      }
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    let uploadPath;
 
-      //  fallback
-      else {
-        uploadPath = path.join(__dirname, "..", "uploads");
-      }
+    if (req.originalUrl.includes("/video")) {
+      uploadPath = path.join(__dirname, "..", "uploads", "videos");
+    } else if (req.originalUrl.includes("/pyq")) {
+      uploadPath = path.join(__dirname, "..", "uploads", "pyqs");
+    } else if (req.originalUrl.includes("/pdf")) {
+      uploadPath = path.join(__dirname, "..", "uploads", "pdfs");
+    } else {
+      uploadPath = path.join(__dirname, "..", "uploads");
+    }
 
-      //  auto create folder
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
 
-      cb(null, uploadPath);
-    },
+    cb(null, uploadPath);
+  },
 
-    //  SAFE FILE NAME
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      cb(null, Date.now() + ext);
-    },
-  });
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
 
-  const upload = multer({
-    storage,
-    limits: { fileSize: 200 * 1024 * 1024 },
-  });
+    cb(null, `${Date.now()}${ext}`);
+  },
+});
 
-  // =====================================================
-  //  VIDEO UPLOAD
-  // =====================================================
-  router.post("/video", (req, res) => {
-    upload.single("video")(req, res, async (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-      try {
-        const { classId, subject } = req.body;
+const upload = multer({
+  storage,
 
-        const newVideo = new Video({
-          classId,
-          subject,
-          fileUrl: `/uploads/videos/${req.file.filename}`,
-        });
+  limits: {
+    fileSize: 200 * 1024 * 1024,
+  },
+});
 
-        await newVideo.save();
 
-        res.json({ message: "Video uploaded ", data: newVideo });
-      } catch (err) {
-        res.status(500).json({ error: err.message });
-      }
-    });
-  });
-  // add this in uploadRoutes.js
-  router.get("/videos", async (req, res) => {
+// =====================================================
+// VIDEO UPLOAD
+// CURRENTLY LOCAL STORAGE
+// =====================================================
+
+router.post("/video", (req, res) => {
+  upload.single("video")(req, res, async (err) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "No video uploaded",
+      });
+    }
+
     try {
-      const videos = await Video.find().sort({ _id: -1 });
-      res.json(videos);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+      const { classId, subject } = req.body;
+
+      if (!classId || !subject) {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+
+        return res.status(400).json({
+          success: false,
+          message: "classId and subject are required",
+        });
+      }
+
+      const newVideo = new Video({
+        classId: String(classId),
+        subject: subject.toLowerCase(),
+        fileUrl: `/uploads/videos/${req.file.filename}`,
+      });
+
+      await newVideo.save();
+
+      return res.status(201).json({
+        success: true,
+        message: "Video uploaded successfully",
+        data: newVideo,
+      });
+    } catch (error) {
+      console.error("VIDEO UPLOAD ERROR:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Video upload failed",
+        error: error.message,
+      });
     }
   });
-  // =====================================================
-  //  PDF UPLOAD
-  // =====================================================
+});
 
 
-  router.post("/pdf", (req, res) => {
+// =====================================================
+// GET ALL VIDEOS
+// =====================================================
+
+router.get("/videos", async (req, res) => {
+  try {
+    const videos = await Video.find().sort({ _id: -1 });
+
+    return res.json(videos);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+
+// =====================================================
+// PDF UPLOAD TO CLOUDINARY
+// =====================================================
+
+router.post("/pdf", (req, res) => {
   upload.single("pdf")(req, res, async (err) => {
     if (err) {
       return res.status(500).json({
@@ -132,7 +174,7 @@ const cloudinary = require("../config/cloudinary");
         public_id: `pdf-${Date.now()}`,
       });
 
-      console.log("Cloudinary URL:", result.secure_url);
+      console.log("PDF Cloudinary URL:", result.secure_url);
 
       const newBook = new Book({
         classId: String(classId),
@@ -167,72 +209,148 @@ const cloudinary = require("../config/cloudinary");
   });
 });
 
-  // =====================================================
-  // PYQ UPLOAD
-  // =====================================================
-  router.post("/pyq", (req, res) => {
-    upload.single("pdf")(req, res, async (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-      try {
-        const { classId, subject } = req.body;
+// =====================================================
+// PYQ UPLOAD TO CLOUDINARY
+// =====================================================
 
-        const newPyq = new PyqModel({
-          classId,
-          subject,
-          fileUrl: `/uploads/pyqs/${req.file.filename}`,
-        });
+router.post("/pyq", (req, res) => {
+  upload.single("pdf")(req, res, async (err) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+    }
 
-        await newPyq.save();
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: "No PYQ PDF uploaded",
+      });
+    }
 
-        res.json({
-          message: "PYQ uploaded ",
-          data: newPyq,
-        });
-      } catch (err) {
-        res.status(500).json({ error: err.message });
-      }
-    });
-  });
-
-  // =====================================================
-  //  GET ALL PYQS
-  // =====================================================
-  router.get("/pyqs", async (req, res) => {
     try {
-      const pyqs = await PyqModel.find().sort({ _id: -1 });
-      res.json(pyqs);
-    } catch (err) {
-      res.status(500).json({ error: err.message });
+      const { classId, subject } = req.body;
+
+      if (!classId || !subject) {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+
+        return res.status(400).json({
+          success: false,
+          message: "classId and subject are required",
+        });
+      }
+
+      console.log("Uploading PYQ to Cloudinary...");
+
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "raw",
+        folder: "ebook/pyqs",
+        public_id: `pyq-${Date.now()}`,
+      });
+
+      console.log("PYQ Cloudinary URL:", result.secure_url);
+
+      const newPyq = new PyqModel({
+        classId: String(classId),
+        subject: subject.toLowerCase(),
+        fileUrl: result.secure_url,
+      });
+
+      await newPyq.save();
+
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: "PYQ uploaded successfully",
+        data: newPyq,
+      });
+    } catch (error) {
+      console.error("PYQ UPLOAD ERROR:", error);
+
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: "PYQ upload failed",
+        error: error.message,
+      });
     }
   });
+});
 
-  // =====================================================
-  //  DELETE PYQ
-  // =====================================================
-  router.delete("/pyq/:id", async (req, res) => {
-    try {
-      const pyq = await PyqModel.findById(req.params.id);
 
-      if (!pyq) return res.status(404).json({ message: "Not found" });
+// =====================================================
+// GET ALL PYQS
+// =====================================================
+
+router.get("/pyqs", async (req, res) => {
+  try {
+    const pyqs = await PyqModel.find().sort({ _id: -1 });
+
+    return res.json(pyqs);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+
+// =====================================================
+// DELETE PYQ DATABASE RECORD
+// =====================================================
+
+router.delete("/pyq/:id", async (req, res) => {
+  try {
+    const pyq = await PyqModel.findById(req.params.id);
+
+    if (!pyq) {
+      return res.status(404).json({
+        success: false,
+        message: "PYQ not found",
+      });
+    }
+
+    // Delete local file only for old local-storage records.
+    if (pyq.fileUrl && !pyq.fileUrl.startsWith("http")) {
+      const relativePath = pyq.fileUrl.replace(/^\/uploads/, "uploads");
 
       const filePath = path.join(
         __dirname,
         "..",
-        pyq.fileUrl.replace("/uploads", "uploads")
+        relativePath
       );
 
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }
-
-      await PyqModel.findByIdAndDelete(req.params.id);
-
-      res.json({ message: "Deleted " });
-    } catch (err) {
-      res.status(500).json({ error: err.message });
     }
-  });
 
-  module.exports = router;
+    await PyqModel.findByIdAndDelete(req.params.id);
+
+    return res.json({
+      success: true,
+      message: "PYQ deleted successfully",
+    });
+  } catch (error) {
+    console.error("DELETE PYQ ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
+
+module.exports = router;
