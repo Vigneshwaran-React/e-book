@@ -88,13 +88,27 @@ router.post("/video", (req, res) => {
         });
       }
 
+      console.log("Uploading Video to Cloudinary...");
+
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "video",
+        folder: "ebook/videos",
+        public_id: `video-${Date.now()}`,
+      });
+
+      console.log("Video Cloudinary URL:", result.secure_url);
+
       const newVideo = new Video({
         classId: String(classId),
         subject: subject.toLowerCase(),
-        fileUrl: `/uploads/videos/${req.file.filename}`,
+        fileUrl: result.secure_url,
       });
 
       await newVideo.save();
+
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
 
       return res.status(201).json({
         success: true,
@@ -103,6 +117,10 @@ router.post("/video", (req, res) => {
       });
     } catch (error) {
       console.error("VIDEO UPLOAD ERROR:", error);
+
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
 
       return res.status(500).json({
         success: false,
