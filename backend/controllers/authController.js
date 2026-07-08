@@ -1,40 +1,18 @@
 const User = require("../models/User");
-const nodemailer = require("nodemailer");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // =====================================================
-// NODEMAILER SETUP
-// =====================================================
-
-const dns = require("dns");
-
-dns.setDefaultResultOrder("ipv4first");
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-});
-
-// =====================================================
-// SEND OTP
+// SEND OTP USING BREVO API
 // =====================================================
 
 exports.sendOTP = async (req, res) => {
   try {
-    const { email, username } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const username = req.body.username?.trim();
 
+    // VALIDATION
     if (!email || !username) {
       return res.status(400).json({
         success: false,
@@ -42,9 +20,31 @@ exports.sendOTP = async (req, res) => {
       });
     }
 
-    // Check completed account
-    const existingUser = await User.findOne({ email });
+    // CHECK BREVO ENV VARIABLES
+    if (!process.env.BREVO_API_KEY) {
+      console.error("BREVO_API_KEY is missing");
 
+      return res.status(500).json({
+        success: false,
+        message: "Email service API key is missing",
+      });
+    }
+
+    if (!process.env.BREVO_SENDER_EMAIL) {
+      console.error("BREVO_SENDER_EMAIL is missing");
+
+      return res.status(500).json({
+        success: false,
+        message: "Sender email configuration is missing",
+      });
+    }
+
+    // CHECK EXISTING USER
+    const existingUser = await User.findOne({
+      email,
+    });
+
+    // USER ALREADY COMPLETED REGISTRATION
     if (
       existingUser &&
       existingUser.isVerified &&
@@ -56,7 +56,7 @@ exports.sendOTP = async (req, res) => {
       });
     }
 
-    // Generate OTP
+    // GENERATE 6 DIGIT OTP
     const otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
@@ -64,11 +64,12 @@ exports.sendOTP = async (req, res) => {
       digits: true,
     });
 
+    // CREATE OR UPDATE USER
     let user = existingUser;
 
     if (!user) {
       user = new User({
-        email: email.toLowerCase(),
+        email,
         username,
       });
     }
@@ -80,33 +81,119 @@ exports.sendOTP = async (req, res) => {
 
     await user.save();
 
-    console.log("Sending OTP using Gmail...");
+    console.log("Sending OTP using Brevo API...");
 
-    await transporter.sendMail({
-      from: `"E-Book App" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "E-Book App - OTP Verification",
-      text: `Your OTP is ${otp}. It expires in 5 minutes.`,
-      html: `
-        <div style="font-family:Arial,sans-serif;padding:20px;">
-          <h2>E-Book App</h2>
+    // SEND OTP USING BREVO HTTP API
+    const brevoResponse = await fetch(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        method: "POST",
 
-          <p>Hello ${username},</p>
+        headers: {
+          accept: "application/json",
+          "api-key": process.env.BREVO_API_KEY,
+          "content-type": "application/json",
+        },
 
-          <p>Your OTP verification code is:</p>
+        body: JSON.stringify({
+          sender: {
+            name: "E-Book App",
+            email: process.env.BREVO_SENDER_EMAIL,
+          },
 
-          <h1 style="letter-spacing:6px;">
-            ${otp}
-          </h1>
+          to: [
+            {
+              email: email,
+              name: username,
+            },
+          ],
 
-          <p>This OTP expires in 5 minutes.</p>
+          subject: "E-Book App - OTP Verification",
 
-          <p>Do not share this OTP with anyone.</p>
-        </div>
-      `,
-    });
+          textContent:
+            `Hello ${username}, your OTP is ${otp}. ` +
+            `This OTP expires in 5 minutes.`,
 
-    console.log("OTP sent successfully to:", email);
+          htmlContent: `
+            <div
+              style="
+                font-family: Arial, sans-serif;
+                max-width: 500px;
+                margin: auto;
+                padding: 25px;
+              "
+            >
+              <h2>E-Book App</h2>
+
+              <p>Hello ${username},</p>
+
+              <p>Your OTP verification code is:</p>
+
+              <div
+                style="
+                  padding: 15px;
+                  margin: 20px 0;
+                  text-align: center;
+                  border: 1px solid #dddddd;
+                  border-radius: 8px;
+                "
+              >
+                <h1
+                  style="
+                    letter-spacing: 6px;
+                    font-size: 36px;
+                    margin: 0;
+                  "
+                >
+                  ${otp}
+                </h1>
+              </div>
+
+              <p>This OTP expires in 5 minutes.</p>
+
+              <p>Do not share this OTP with anyone.</p>
+
+              <p>E-Book App Team</p>
+            </div>
+          `,
+        }),
+      }
+    );
+
+    // READ BREVO RESPONSE
+    const responseText = await brevoResponse.text();
+
+    let brevoData = {};
+
+    if (responseText) {
+      try {
+        brevoData = JSON.parse(responseText);
+      } catch {
+        brevoData = {
+          rawResponse: responseText,
+        };
+      }
+    }
+
+    // BREVO ERROR
+    if (!brevoResponse.ok) {
+      console.error(
+        "BREVO API ERROR:",
+        brevoResponse.status,
+        brevoData
+      );
+
+      return res.status(502).json({
+        success: false,
+        message: "Failed to send OTP email",
+      });
+    }
+
+    // SUCCESS
+    console.log(
+      "OTP sent successfully using Brevo:",
+      brevoData.messageId
+    );
 
     return res.status(200).json({
       success: true,
@@ -124,14 +211,17 @@ exports.sendOTP = async (req, res) => {
   }
 };
 
+
 // =====================================================
 // VERIFY OTP
 // =====================================================
 
 exports.verifyOTP = async (req, res) => {
   try {
-    const { email, otp } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const otp = String(req.body.otp || "").trim();
 
+    // VALIDATION
     if (!email || !otp) {
       return res.status(400).json({
         success: false,
@@ -139,8 +229,9 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
+    // FIND USER
     const user = await User.findOne({
-      email: email.toLowerCase(),
+      email,
     });
 
     if (!user) {
@@ -150,13 +241,15 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
-    if (!user.otp || user.otp !== String(otp)) {
+    // CHECK OTP
+    if (!user.otp || String(user.otp) !== otp) {
       return res.status(400).json({
         success: false,
         message: "Invalid OTP",
       });
     }
 
+    // CHECK OTP EXPIRY
     if (!user.otpExpiry || user.otpExpiry < Date.now()) {
       return res.status(400).json({
         success: false,
@@ -164,12 +257,14 @@ exports.verifyOTP = async (req, res) => {
       });
     }
 
+    // OTP VERIFIED
     user.isVerified = true;
-
     user.otp = undefined;
     user.otpExpiry = undefined;
 
     await user.save();
+
+    console.log("OTP verified successfully for:", email);
 
     return res.status(200).json({
       success: true,
@@ -186,29 +281,21 @@ exports.verifyOTP = async (req, res) => {
   }
 };
 
+
 // =====================================================
 // SET PASSWORD
 // =====================================================
 
 exports.setPassword = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password;
 
+    // VALIDATION
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: "Email and password are required",
-      });
-    }
-
-    const user = await User.findOne({
-      email: email.toLowerCase(),
-    });
-
-    if (!user || !user.isVerified) {
-      return res.status(403).json({
-        success: false,
-        message: "OTP not verified",
       });
     }
 
@@ -219,9 +306,33 @@ exports.setPassword = async (req, res) => {
       });
     }
 
-    user.password = await bcrypt.hash(password, 10);
+    // FIND USER
+    const user = await User.findOne({
+      email,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "OTP not verified",
+      });
+    }
+
+    // HASH PASSWORD
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
 
     await user.save();
+
+    console.log("Password set successfully for:", email);
 
     return res.status(200).json({
       success: true,
@@ -238,14 +349,17 @@ exports.setPassword = async (req, res) => {
   }
 };
 
+
 // =====================================================
 // LOGIN
 // =====================================================
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const email = req.body.email?.trim().toLowerCase();
+    const password = req.body.password;
 
+    // VALIDATION
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -253,8 +367,9 @@ exports.login = async (req, res) => {
       });
     }
 
+    // FIND USER
     const user = await User.findOne({
-      email: email.toLowerCase(),
+      email,
     });
 
     if (!user) {
@@ -264,6 +379,7 @@ exports.login = async (req, res) => {
       });
     }
 
+    // CHECK REGISTRATION COMPLETE
     if (!user.password) {
       return res.status(400).json({
         success: false,
@@ -271,6 +387,7 @@ exports.login = async (req, res) => {
       });
     }
 
+    // CHECK PASSWORD
     const isMatch = await bcrypt.compare(
       password,
       user.password
@@ -283,6 +400,17 @@ exports.login = async (req, res) => {
       });
     }
 
+    // CHECK JWT SECRET
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is missing");
+
+      return res.status(500).json({
+        success: false,
+        message: "Server authentication configuration error",
+      });
+    }
+
+    // CREATE JWT TOKEN
     const token = jwt.sign(
       {
         id: user._id,
@@ -292,6 +420,8 @@ exports.login = async (req, res) => {
         expiresIn: "1d",
       }
     );
+
+    console.log("Login successful for:", email);
 
     return res.status(200).json({
       success: true,
