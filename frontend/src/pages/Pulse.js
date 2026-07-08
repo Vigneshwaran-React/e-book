@@ -18,32 +18,45 @@ import {
 
 import BASE_URL from "../config/config";
 
-
 function PulsePage() {
   const [videos, setVideos] = useState([]);
-  const videoRefs = useRef([]);
-  const [, setRefresh] = useState(false);
 
+  // true = muted, false = sound ON
+  const [isMuted, setIsMuted] = useState(true);
+
+  // Currently playing video index
+  const [playingIndex, setPlayingIndex] = useState(null);
+
+  const videoRefs = useRef([]);
 
   // =====================================================
   // GET VIDEOS
   // =====================================================
 
   useEffect(() => {
-    fetch(`${BASE_URL}/api/upload/videos`)
-      .then((res) => res.json())
-      .then((data) => {
+    const getVideos = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/api/upload/videos`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch videos");
+        }
+
+        const data = await res.json();
+
         console.log("VIDEOS:", data);
+
         setVideos(data);
-      })
-      .catch((err) => {
-        console.log("VIDEO FETCH ERROR:", err);
-      });
+      } catch (error) {
+        console.log("VIDEO FETCH ERROR:", error);
+      }
+    };
+
+    getVideos();
   }, []);
 
-
   // =====================================================
-  // AUTO PLAY BASED ON SCROLL
+  // AUTO PLAY / PAUSE BASED ON SCROLL
   // =====================================================
 
   useEffect(() => {
@@ -52,12 +65,50 @@ function PulsePage() {
         entries.forEach((entry) => {
           const video = entry.target;
 
+          const index = Number(video.dataset.index);
+
           if (entry.isIntersecting) {
-            video.play().catch(() => {
-              // Browser may block autoplay with sound.
+            // Pause all other videos
+            videoRefs.current.forEach((otherVideo, otherIndex) => {
+              if (otherVideo && otherIndex !== index) {
+                otherVideo.pause();
+              }
             });
+
+            // Apply current global sound preference
+            video.muted = isMuted;
+
+            // Play visible video
+            video
+              .play()
+              .then(() => {
+                setPlayingIndex(index);
+              })
+              .catch((error) => {
+                console.log("AUTOPLAY BLOCKED:", error);
+
+                // Browser blocked autoplay with sound.
+                // Fallback to muted autoplay.
+
+                video.muted = true;
+
+                setIsMuted(true);
+
+                video
+                  .play()
+                  .then(() => {
+                    setPlayingIndex(index);
+                  })
+                  .catch((playError) => {
+                    console.log("VIDEO PLAY ERROR:", playError);
+                  });
+              });
           } else {
             video.pause();
+
+            setPlayingIndex((currentIndex) =>
+              currentIndex === index ? null : currentIndex
+            );
           }
         });
       },
@@ -66,54 +117,86 @@ function PulsePage() {
       }
     );
 
-
     videoRefs.current.forEach((video) => {
       if (video) {
         observer.observe(video);
       }
     });
 
-
     return () => {
       observer.disconnect();
     };
-  }, [videos]);
-
+  }, [videos, isMuted]);
 
   // =====================================================
   // PLAY / PAUSE
   // =====================================================
 
-  const togglePlay = (video) => {
+  const togglePlay = async (video, index) => {
     if (!video) return;
 
-    if (video.paused) {
-      video.play().catch((err) => {
-        console.log("PLAY ERROR:", err);
-      });
-    } else {
-      video.pause();
+    try {
+      if (video.paused) {
+        // Pause all other videos
+        videoRefs.current.forEach((otherVideo, otherIndex) => {
+          if (otherVideo && otherIndex !== index) {
+            otherVideo.pause();
+          }
+        });
+
+        video.muted = isMuted;
+
+        await video.play();
+
+        setPlayingIndex(index);
+      } else {
+        video.pause();
+
+        setPlayingIndex(null);
+      }
+    } catch (error) {
+      console.log("PLAY ERROR:", error);
     }
-
-    setRefresh((prev) => !prev);
   };
 
-
   // =====================================================
-  // MUTE / UNMUTE
+  // GLOBAL MUTE / UNMUTE
   // =====================================================
 
-  const toggleMute = (video) => {
-    if (!video) return;
+  const toggleMute = async () => {
+    const newMutedState = !isMuted;
 
-    video.muted = !video.muted;
+    setIsMuted(newMutedState);
 
-    setRefresh((prev) => !prev);
+    // Apply sound preference to all videos
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        video.muted = newMutedState;
+      }
+    });
+
+    // When user manually turns sound ON,
+    // continue playing current visible video.
+
+    if (!newMutedState && playingIndex !== null) {
+      const currentVideo = videoRefs.current[playingIndex];
+
+      if (currentVideo) {
+        try {
+          await currentVideo.play();
+        } catch (error) {
+          console.log("UNMUTE PLAY ERROR:", error);
+        }
+      }
+    }
   };
-
 
   return (
     <>
+      {/* =====================================================
+          NAVBAR
+      ===================================================== */}
+
       <nav className="navbar">
         <div className="logo">e-Book</div>
 
@@ -148,65 +231,85 @@ function PulsePage() {
         </ul>
       </nav>
 
+      {/* =====================================================
+          REELS
+      ===================================================== */}
 
       <div className="reels-container">
-        {videos.map((v, i) => {
+        {videos.map((videoData, index) => {
+          /*
+            Supports BOTH:
 
-          // Cloudinary URL or old local URL support
-          // const finalVideoUrl = v.fileUrl?.startsWith("http")
-          //   ? v.fileUrl
-          //   : `${BASE_URL}${v.fileUrl}`;
+            New Cloudinary URL:
+            https://res.cloudinary.com/...
 
+            Old local backend URL:
+            /uploads/videos/video.mp4
+          */
+
+          const finalVideoUrl = videoData.fileUrl?.startsWith("http")
+            ? videoData.fileUrl
+            : `${BASE_URL}${videoData.fileUrl}`;
 
           return (
-            <div className="reel" key={v._id}>
-
+            <div className="reel" key={videoData._id}>
               <video
-                ref={(el) => {
-                  videoRefs.current[i] = el;
+                ref={(element) => {
+                  videoRefs.current[index] = element;
                 }}
-                src={v.fileUrl}
+                data-index={index}
+                src={finalVideoUrl}
                 loop
                 playsInline
-                muted
+                muted={isMuted}
                 preload="metadata"
                 className="video"
-                onClick={(e) => togglePlay(e.currentTarget)}
+                onClick={(event) =>
+                  togglePlay(event.currentTarget, index)
+                }
               />
 
+              {/* =================================================
+                  VIDEO CONTROLS
+              ================================================= */}
 
               <div className="controls">
+                {/* PLAY / PAUSE */}
 
                 <button
+                  type="button"
                   onClick={() =>
-                    togglePlay(videoRefs.current[i])
+                    togglePlay(videoRefs.current[index], index)
                   }
                 >
-                  {videoRefs.current[i]?.paused
-                    ? <FaPlay />
-                    : <FaPause />
-                  }
+                  {playingIndex === index ? (
+                    <FaPause />
+                  ) : (
+                    <FaPlay />
+                  )}
                 </button>
 
+                {/* MUTE / UNMUTE */}
 
                 <button
-                  onClick={() =>
-                    toggleMute(videoRefs.current[i])
-                  }
+                  type="button"
+                  onClick={toggleMute}
                 >
-                  {videoRefs.current[i]?.muted
-                    ? <FaVolumeMute />
-                    : <FaVolumeUp />
-                  }
+                  {isMuted ? (
+                    <FaVolumeMute />
+                  ) : (
+                    <FaVolumeUp />
+                  )}
                 </button>
-
               </div>
-
             </div>
           );
         })}
       </div>
 
+      {/* =====================================================
+          MOBILE BOTTOM NAV
+      ===================================================== */}
 
       <div className="bottom-nav">
         <div>
@@ -242,6 +345,5 @@ function PulsePage() {
     </>
   );
 }
-
 
 export default PulsePage;
